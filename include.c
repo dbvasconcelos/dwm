@@ -1,4 +1,4 @@
 #include "dwmc.c"
-#include "cfacts.c"
+#include "facts.c"
 #include "vanitygaps.c"
 #include "layouts.c"
