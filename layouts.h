@@ -2,6 +2,7 @@ static void bstack(Monitor *m);
 static void bstackhoriz(Monitor *m);
 static void centeredfloatingmaster(Monitor *m);
 static void centeredmaster(Monitor *m);
+static void col(Monitor *);
 static void deck(Monitor *m);
 static void dwindle(Monitor *mon);
 static void fibonacci(Monitor *mon, int s);

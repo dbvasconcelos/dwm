@@ -230,7 +230,6 @@ static void checkotherwm(void);
 static void cleanup(void);
 static void cleanupmon(Monitor *mon);
 static void clientmessage(XEvent *e);
-static void col(Monitor *);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
@@ -786,32 +785,6 @@ clientmessage(XEvent *e)
 }
 
 void
-col(Monitor *m) {
-	unsigned int i, n, h, w, x, y,mw;
-	Client *c;
-
-	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
-	if(n == 0)
-		return;
-        if(n > m->nmaster)
-                mw = m->nmaster ? m->ww * m->mfact : 0;
-        else
-                mw = m->ww;
-	for(i = x = y = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), i++) {
-		if(i < m->nmaster) {
-			 w = (mw - x) / (MIN(n, m->nmaster)-i);
-                         resize(c, x + m->wx, m->wy, w - (2*c->bw), m->wh - (2*c->bw), False);
-			x += WIDTH(c);
-		}
-		else {
-			h = (m->wh - y) / (n - i);
-			resize(c, x + m->wx, m->wy + y, m->ww - x  - (2*c->bw), h - (2*c->bw), False);
-			y += HEIGHT(c);
-		}
-	}
-}
-
-void
 configure(Client *c)
 {
 	XConfigureEvent ce;
@@ -954,6 +927,8 @@ createmon(void)
 		m->pertag->sellts[i] = m->sellt;
 
 		m->pertag->showbars[i] = m->showbar;
+
+		m->pertag->enablegaps[i] = 1;
 	}
 
 	return m;
@@ -2363,7 +2338,7 @@ toggleview(const Arg *arg)
 	if (newtagset) {
 		selmon->tagset[selmon->seltags] = newtagset;
 
-		if (newtagset == ~0) {
+		if (newtagset == ~SPTAGMASK) {
 			selmon->pertag->prevtag = selmon->pertag->curtag;
 			selmon->pertag->curtag = 0;
 		}

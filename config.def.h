@@ -221,6 +221,7 @@ static Signal signals[] = {
 	{ "togglefloating", togglefloating },
 	{ "togglegaps",     togglegaps },
 	{ "togglescratch",  togglescratch },
+	{ "togglesticky",   togglesticky },
 	{ "toggletag",      tag },
 	{ "toggletagex",    toggletagex },
 	{ "toggleview",     view },
