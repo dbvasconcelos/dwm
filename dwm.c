@@ -408,10 +408,11 @@ static int lrpad;            /* sum of left and right padding for text */
  * glitches when moving (or resizing) client windows from one monitor to another. This variable
  * is used internally to ignore such configure notify requests while movemouse or resizemouse are
  * being used. */
-static int ignoreconfigurenotifyrequests = 0;
-/* Some mouse operations may be broken by the automatic warp patch. This variable is used internally
- * to avoid the warp when needed */
-static int ignorewarp = 0;
+static int ignore_configure_requests = 0;
+/* Some mouse operations may be broken by the automatic warp patch. These variables are used internally
+ * to avoid or force the warp when needed */
+static int ignore_warp = 0;
+static int force_warp = 0;
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
 static void (*handler[LASTEvent]) (XEvent *) = {
@@ -906,7 +907,7 @@ configurerequest(XEvent *e)
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	XWindowChanges wc;
 
-	if (ignoreconfigurenotifyrequests)
+	if (ignore_configure_requests)
 		return;
 
 	if ((c = wintoclient(ev->window))) {
@@ -1578,6 +1579,7 @@ killclient(const Arg *arg)
 		XSync(dpy, False);
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
+		force_warp = 1;
 	}
 }
 
@@ -1725,7 +1727,7 @@ movemouse(const Arg *arg)
 		return;
 	if (!getrootptr(&x, &y))
 		return;
-	ignoreconfigurenotifyrequests = 1;
+	ignore_configure_requests = 1;
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
 		switch(ev.type) {
@@ -1763,7 +1765,7 @@ movemouse(const Arg *arg)
 		selmon = m;
 		focus(NULL);
 	}
-	ignoreconfigurenotifyrequests = 0;
+	ignore_configure_requests = 0;
 }
 
 Client *
@@ -1949,7 +1951,7 @@ resizemouse(const Arg *arg)
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 		None, cursor[horizcorner | (vertcorner << 1)]->cursor, CurrentTime) != GrabSuccess)
 		return;
-	ignoreconfigurenotifyrequests = 1;
+	ignore_configure_requests = 1;
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
 		switch(ev.type) {
@@ -1986,7 +1988,7 @@ resizemouse(const Arg *arg)
 		selmon = m;
 		focus(NULL);
 	}
-	ignoreconfigurenotifyrequests = 0;
+	ignore_configure_requests = 0;
 }
 
 void
@@ -3157,24 +3159,29 @@ view(const Arg *arg)
 void
 warp(const Client *c)
 {
-	if (ignorewarp)
-		return;
-
 	int x, y;
+
+	if (ignore_warp)
+		return;
 
 	if (!c) {
 		XWarpPointer(dpy, None, root, 0, 0, 0, 0, selmon->wx + selmon->ww/2, selmon->wy + selmon->wh/2);
 		return;
 	}
 
-	if (!getrootptr(&x, &y) ||
-	    (x > c->x - c->bw &&
-	     y > c->y - c->bw &&
-	     x < c->x + c->w + c->bw*2 &&
-	     y < c->y + c->h + c->bw*2) ||
-	    (y > c->mon->by && y < c->mon->by + bh) ||
-	    (c->mon->topbar && !y))
+	if (!getrootptr(&x, &y))
 		return;
+
+	if (!force_warp &&
+			((x > c->x - c->bw &&
+			  y > c->y - c->bw &&
+			  x < c->x + c->w + c->bw*2 &&
+			  y < c->y + c->h + c->bw*2) ||
+			 (y > c->mon->by && y < c->mon->by + bh) ||
+			 (c->mon->topbar && !y)))
+		return;
+
+	force_warp = 0;
 
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w / 2, c->h / 2);
 }
