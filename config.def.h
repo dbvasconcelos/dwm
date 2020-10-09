@@ -14,7 +14,7 @@ static const int showsystray             = 1;   /* 0 means no systray */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayspacing = 2;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
-static const char *fonts[]               = { "monospace:size=10:style=bold", "Noto Color Emoji:size=10" };
+static const char *fonts[]               = { "monospace:size=10:dpi=192:style=bold", "Noto Color Emoji:pixelsize=28:antialias=true:autohint=true" };
 static char normbgcolor[]                = "#222222";
 static char normbordercolor[]            = "#444444";
 static char normfgcolor[]                = "#bbbbbb";
@@ -51,7 +51,7 @@ typedef struct {
 } Sp;
 const char *spcmd1[] = {"st", "-n", "terminal", "-g", "120x34", NULL };
 const char *spcmd2[] = {"st", "-n", "filemanager", "-g", "144x41", "-e", "lf", NULL };
-const char *spcmd3[] = {"st", "-n", "calculator", "-g", "30x20", "-e", "bc", "-l", NULL };
+const char *spcmd3[] = {"st", "-n", "calculator", "-f", "monospace:size=16", "-g", "50x20", "-e", "bc", "-lq", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",      spcmd1},
